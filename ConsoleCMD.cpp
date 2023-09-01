@@ -30,8 +30,7 @@ void ConsoleCMD::Clear() {
 }
 
 void ConsoleCMD::ShowHelp() {
-	printboth(
-			" ------------------------------- commands ------------------------------- \n"
+	printboth(" ------------------------------- commands ------------------------------- \n"
 			"   exit                        exits console\n"
 			"   clear                       clear screen\n"
 			"   msg \"<some message>\"        prints text to ingame console\n"
@@ -43,7 +42,7 @@ void ConsoleCMD::ShowHelp() {
 			"   speedlimit                  disables/enables speedlimit (breaks ABH)\n"
 			"   air <value>                 set sv_airaccelerate, like the good old days\n"
 			"   bhopboost <value>           default is 1 (no boost)\n"
-	);
+			"   infammo                     enables infinite ammo\n");
 }
 
 void ConsoleCMD::Msg(const char *input) {
@@ -52,8 +51,7 @@ void ConsoleCMD::Msg(const char *input) {
 	size_t endPos = inputStr.find('"', startPos + 1);
 
 	if (startPos != std::string::npos && endPos != std::string::npos) {
-		std::string message = inputStr.substr(startPos + 1,
-				endPos - startPos - 1);
+		std::string message = inputStr.substr(startPos + 1, endPos - startPos - 1);
 		message += '\n';
 		hl2Msg(message.c_str());
 	}
@@ -67,7 +65,7 @@ void ConsoleCMD::PlayerData() {
 
 void ConsoleCMD::ReInitPlayer() {
 	ply->Init();
-	if(ply->Initialized)
+	if (ply->Initialized)
 		printboth(" -- player initialized successfully\n");
 	else
 		printboth(" -- player initialization failed\n");
@@ -112,7 +110,7 @@ void ConsoleCMD::Exit() {
 }
 
 void ConsoleCMD::Speedlimit() {
-	if(ply->disableSpeedlimit){
+	if (ply->disableSpeedlimit) {
 		ply->DisableSpeedLimit(false);
 		printboth(" -- speedlimit enabled\n");
 	} else {
@@ -134,4 +132,13 @@ void ConsoleCMD::BhopBoost(float value) {
 	stringstream s;
 	s << " -- bhopboost set to " << value << endl;
 	printboth(s.str().c_str());
+}
+
+void ConsoleCMD::InfAmmo() {
+	ply->wep->InfiniteAmmo(!(ply->wep->InfiniteAmmoEnabled));
+	if (ply->wep->InfiniteAmmoEnabled) {
+		printboth(" -- infinite ammo enabled\n");
+	} else {
+		printboth(" -- infinite ammo disabled\n");
+	}
 }

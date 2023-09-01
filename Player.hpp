@@ -7,7 +7,9 @@
 
 #ifndef PLAYER_HPP_
 #define PLAYER_HPP_
+#include "Weapon.hpp"
 #include <cstdint>
+#include <memory>
 #include <windows.h>
 
 typedef struct {
@@ -35,6 +37,8 @@ public:
 	bool  jumpthread;
 	bool  disableSpeedlimit = false;
 	bool  loading = false;
+
+	std::unique_ptr<Weapon> wep;
 
 	Player();
 	virtual ~Player();

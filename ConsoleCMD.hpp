@@ -27,6 +27,7 @@ public:
 	void AirAccelerate(float value);
 	void Exit();
 	void BhopBoost(float value);
+	void InfAmmo();
 
 	void hl2Msg(const char *Message);
 

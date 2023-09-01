@@ -39,6 +39,10 @@ void Player::Init() {
 						+ offset_ongroundFUCK_bytes;
 
 				Initialized = true;
+
+				if(wep == nullptr)
+					wep = std::make_unique<Weapon>(&ServerDLLBase,&Initialized);
+
 			} catch (exception &e) {
 				cout << "plyErr: access violation, initialization failed" << endl;
 				cout << "E: " << e.what() << endl;

@@ -124,6 +124,9 @@ bool Console::InputLoop() {
             } else {
                 std::cout << " -- invalid argument for bhopboost" << std::endl;
             }
+        } },
+        { "infammo", [this]() {
+        	CMD->InfAmmo();
         } }
         // Add more commands here
     };
