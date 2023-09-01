@@ -127,6 +127,9 @@ bool Console::InputLoop() {
         } },
         { "infammo", [this]() {
         	CMD->InfAmmo();
+        } },
+        { "pistolspray", [this]() {
+        	CMD->SprayShot();
         } }
         // Add more commands here
     };

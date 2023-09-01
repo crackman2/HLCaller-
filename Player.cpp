@@ -35,13 +35,12 @@ void Player::Init() {
 				cam = { 0, 0 };
 				maxvel = 0;
 
-				OnGroundFuck = (*(uint32_t*) ((uint32_t) ServerDLLBase + offset_ongroundFUCK))
-						+ offset_ongroundFUCK_bytes;
+				OnGroundFuck = (*(uint32_t*) ((uint32_t) ServerDLLBase + offset_ongroundFUCK)) + offset_ongroundFUCK_bytes;
 
 				Initialized = true;
 
-				if(wep == nullptr)
-					wep = std::make_unique<Weapon>(&ServerDLLBase,&Initialized);
+				if (wep == nullptr)
+					wep = std::make_unique<Weapon>(&ServerDLLBase, &Initialized);
 
 			} catch (exception &e) {
 				cout << "plyErr: access violation, initialization failed" << endl;
@@ -109,9 +108,14 @@ void Player::GetPlayerData(char *buffer1024) {
 				"  posz: %.1f\n"
 				"  velx: %.1f\n"
 				"  vely: %.1f\n"
-				"  velz: %.1f\n", (uint32_t) (LocalPlayer + offset_posx), (uint32_t) (LocalPlayer + offset_posy),
-				(uint32_t) (LocalPlayer + offset_posz), (uint32_t) (LocalPlayer + offset_velx),
-				(uint32_t) (LocalPlayer + offset_vely), (uint32_t) (LocalPlayer + offset_velz), pos.x, pos.y, pos.z,
+				"  velz: %.1f\n",
+				(uint32_t) (LocalPlayer + offset_posx),
+				(uint32_t) (LocalPlayer + offset_posy),
+				(uint32_t) (LocalPlayer + offset_posz),
+				(uint32_t) (LocalPlayer + offset_velx),
+				(uint32_t) (LocalPlayer + offset_vely),
+				(uint32_t) (LocalPlayer + offset_velz),
+				pos.x, pos.y, pos.z,
 				vel.x, vel.y, vel.z);
 
 		strcpy(buffer1024, strPlayerData);
@@ -253,7 +257,7 @@ void Player::PollBhop() {
 		 */
 
 	} else {
-			PrintPointerError();
+		PrintPointerError();
 	}
 }
 
@@ -280,8 +284,8 @@ void Player::DisableSpeedLimit(bool state) {
 	if (Initialized and !IsLoading()) {
 		if (state) {
 			DWORD old = 0;
-			VirtualProtect((LPVOID) ((uint32_t)ServerDLLBase + offset_speedlimitX), sizeof(offset_speedlimitX),
-					PAGE_EXECUTE_READWRITE, &old);
+			VirtualProtect((LPVOID) ((uint32_t) ServerDLLBase + offset_speedlimitX), sizeof(offset_speedlimitX),
+			PAGE_EXECUTE_READWRITE, &old);
 			for (uint32_t i = 0; i < sizeof(bytes_speedlimitX); i++) {
 				*(uint8_t*) ((uint32_t) ServerDLLBase + offset_speedlimitX + i) = 0x90;
 				*(uint8_t*) ((uint32_t) ServerDLLBase + offset_speedlimitY + i) = 0x90;
@@ -300,15 +304,15 @@ void Player::DisableSpeedLimit(bool state) {
 }
 
 void Player::SetAirAccelerate(float value) {
-	if(Initialized and !IsLoading()){
-		*(float*)((uint32_t)ServerDLLBase + offset_cvar_airacc) = value;
+	if (Initialized and !IsLoading()) {
+		*(float*) ((uint32_t) ServerDLLBase + offset_cvar_airacc) = value;
 	} else {
 		PrintPointerError();
 	}
 }
 
 void Player::BhopBoost() {
-	if(Initialized and !IsLoading()){
+	if (Initialized and !IsLoading()) {
 		GetVelocity();
 		vel.x *= bhopboost;
 		vel.y *= bhopboost;
@@ -323,18 +327,17 @@ bool Player::IsLoading() {
 	if (ClientDLLBase != 0) {
 		result = *(uint8_t*) ((uint32_t) ClientDLLBase + offset_loading1);
 	}
-	bool tmp = (bool)result;
-	if(tmp){
+	bool tmp = (bool) result;
+	if (tmp) {
 		Initialized = false;
 		loading = true;
 	}
-
 
 	return tmp;
 }
 
 void Player::PrintPointerError() {
-	if(!IsLoading()){
+	if (!IsLoading()) {
 		cout << "plyErr: pointer invalid. getting fresh pointers" << endl;
 		Init();
 	}

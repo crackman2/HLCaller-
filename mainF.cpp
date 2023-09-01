@@ -17,7 +17,6 @@ DWORD WINAPI fmcConsoleMainThread(LPVOID lpParam) {
 	ConsoleCMD CMD(&ply);
 	Console con("HLCaller++", &ply, &CMD);
 
-
 	while (con.InputLoop()) {}
 
 	con.~Console();

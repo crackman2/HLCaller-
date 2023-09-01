@@ -9,60 +9,69 @@
 #include <windows.h>
 
 Weapon::Weapon(HANDLE *ServerDLLBase, bool *Initialized) {
-	if(Initialized != nullptr){
+	if (Initialized != nullptr) {
 		this->Initialized = Initialized;
 	}
 
-	if(ServerDLLBase != nullptr){
+	if (ServerDLLBase != nullptr) {
 		this->ServerDLLBase = ServerDLLBase;
 	}
 }
-
-
 
 Weapon::~Weapon() {
 	// TODO Auto-generated destructor stub
 }
 
-
 void Weapon::InfiniteAmmo(bool state) {
-	if(*Initialized){
-		if(state){
-			KillOpCodes(offset_infAmmo_mostPrimary,opcode_infAmmo_mostPrimary,sizeof(opcode_infAmmo_mostPrimary),true);
-			KillOpCodes(offset_infAmmo_mostAltfire,opcode_infAmmo_mostAltfire,sizeof(opcode_infAmmo_mostAltfire),true);
-			KillOpCodes(offset_infAmmo_specialGuns,opcode_infAmmo_specialGuns,sizeof(opcode_infAmmo_specialGuns),true);
-			KillOpCodes(offset_infAmmo_shotgun,    opcode_infAmmo_shotgun,    sizeof(opcode_infAmmo_shotgun),    true);
-			KillOpCodes(offset_infAmmo_shotgunAlt, opcode_infAmmo_shotgunAlt, sizeof(opcode_infAmmo_shotgunAlt), true);
-			KillOpCodes(offset_infAmmo_xbowReload, opcode_infAmmo_xbowReload, sizeof(opcode_infAmmo_xbowReload), true);
+	if (*Initialized) {
+		if (state) {
+			KillOpCodes(offset_infAmmo_mostPrimary, opcode_infAmmo_mostPrimary, sizeof(opcode_infAmmo_mostPrimary),  true);
+			KillOpCodes(offset_infAmmo_mostAltfire, opcode_infAmmo_mostAltfire, sizeof(opcode_infAmmo_mostAltfire),  true);
+			KillOpCodes(offset_infAmmo_specialGuns, opcode_infAmmo_specialGuns, sizeof(opcode_infAmmo_specialGuns),  true);
+			KillOpCodes(offset_infAmmo_shotgun,     opcode_infAmmo_shotgun,     sizeof(opcode_infAmmo_shotgun),      true);
+			KillOpCodes(offset_infAmmo_shotgunAlt,  opcode_infAmmo_shotgunAlt,  sizeof(opcode_infAmmo_shotgunAlt),   true);
+			KillOpCodes(offset_infAmmo_xbowReload,  opcode_infAmmo_xbowReload,  sizeof(opcode_infAmmo_xbowReload),   true);
 			InfiniteAmmoEnabled = true;
-
 		} else {
-			KillOpCodes(offset_infAmmo_mostPrimary,opcode_infAmmo_mostPrimary,sizeof(opcode_infAmmo_mostPrimary),false);
-			KillOpCodes(offset_infAmmo_mostAltfire,opcode_infAmmo_mostAltfire,sizeof(opcode_infAmmo_mostAltfire),false);
-			KillOpCodes(offset_infAmmo_specialGuns,opcode_infAmmo_specialGuns,sizeof(opcode_infAmmo_specialGuns),false);
-			KillOpCodes(offset_infAmmo_shotgun,    opcode_infAmmo_shotgun,    sizeof(opcode_infAmmo_shotgun),    false);
-			KillOpCodes(offset_infAmmo_shotgunAlt, opcode_infAmmo_shotgunAlt, sizeof(opcode_infAmmo_shotgunAlt), false);
-			KillOpCodes(offset_infAmmo_xbowReload, opcode_infAmmo_xbowReload, sizeof(opcode_infAmmo_xbowReload), false);
+			KillOpCodes(offset_infAmmo_mostPrimary, opcode_infAmmo_mostPrimary, sizeof(opcode_infAmmo_mostPrimary), false);
+			KillOpCodes(offset_infAmmo_mostAltfire, opcode_infAmmo_mostAltfire, sizeof(opcode_infAmmo_mostAltfire), false);
+			KillOpCodes(offset_infAmmo_specialGuns, opcode_infAmmo_specialGuns, sizeof(opcode_infAmmo_specialGuns), false);
+			KillOpCodes(offset_infAmmo_shotgun,     opcode_infAmmo_shotgun,     sizeof(opcode_infAmmo_shotgun),     false);
+			KillOpCodes(offset_infAmmo_shotgunAlt,  opcode_infAmmo_shotgunAlt,  sizeof(opcode_infAmmo_shotgunAlt),  false);
+			KillOpCodes(offset_infAmmo_xbowReload,  opcode_infAmmo_xbowReload,  sizeof(opcode_infAmmo_xbowReload),  false);
 			InfiniteAmmoEnabled = false;
 		}
 	}
 }
 
+void Weapon::SprayShot(bool state) {
+	if (*Initialized) {
+		if (state) {
+			KillOpCodes(offset_sprayshuss_pistol1,  opcode_sprayshuss_pistol1,  sizeof(opcode_sprayshuss_pistol1),   true);
+			KillOpCodes(offset_sprayshuss_pistol2,  opcode_sprayshuss_pistol2,  sizeof(opcode_sprayshuss_pistol1),   true);
+			SprayShotEnabled = true;
+		} else {
+			KillOpCodes(offset_sprayshuss_pistol1,  opcode_sprayshuss_pistol1,  sizeof(opcode_sprayshuss_pistol1),  false);
+			KillOpCodes(offset_sprayshuss_pistol2,  opcode_sprayshuss_pistol2,  sizeof(opcode_sprayshuss_pistol1),  false);
+			SprayShotEnabled = false;
+		}
+	}
+}
 
 /**
  *  PRIVATE
  */
 
-void Weapon::KillOpCodes(const uint32_t offset,const uint8_t *opcodes, size_t size, bool NOP) {
+void Weapon::KillOpCodes(const uint32_t offset, const uint8_t *opcodes, size_t size, bool NOP) {
 	DWORD old;
-	VirtualProtect((LPVOID)((uint32_t)(*ServerDLLBase) + offset),size,PAGE_EXECUTE_READWRITE,&old);
-	if(NOP or (opcodes == nullptr)){
-		for(uint32_t i = 0; i < size; i++){
-			*(uint8_t*)((uint32_t)(*ServerDLLBase) + offset + i) = 0x90;
+	VirtualProtect((LPVOID) ((uint32_t) (*ServerDLLBase) + offset), size, PAGE_EXECUTE_READWRITE, &old);
+	if (NOP or (opcodes == nullptr)) {
+		for (uint32_t i = 0; i < size; i++) {
+			*(uint8_t*) ((uint32_t) (*ServerDLLBase) + offset + i) = 0x90;
 		}
 	} else {
-		for(uint32_t i = 0; i < size; i++){
-			*(uint8_t*)((uint32_t)(*ServerDLLBase) + offset + i) = opcodes[i];
+		for (uint32_t i = 0; i < size; i++) {
+			*(uint8_t*) ((uint32_t) (*ServerDLLBase) + offset + i) = opcodes[i];
 		}
 	}
 }

@@ -42,7 +42,9 @@ void ConsoleCMD::ShowHelp() {
 			"   speedlimit                  disables/enables speedlimit (breaks ABH)\n"
 			"   air <value>                 set sv_airaccelerate, like the good old days\n"
 			"   bhopboost <value>           default is 1 (no boost)\n"
-			"   infammo                     enables infinite ammo\n");
+			"   infammo                     enables infinite ammo\n"
+			"   pistolspray                 pistol fires all ammo at once (lag)\n"
+	);
 }
 
 void ConsoleCMD::Msg(const char *input) {
@@ -140,5 +142,14 @@ void ConsoleCMD::InfAmmo() {
 		printboth(" -- infinite ammo enabled\n");
 	} else {
 		printboth(" -- infinite ammo disabled\n");
+	}
+}
+
+void ConsoleCMD::SprayShot() {
+	ply->wep->SprayShot(!(ply->wep->SprayShotEnabled));
+	if (ply->wep->SprayShotEnabled) {
+		printboth(" -- pistolspray enabled\n");
+	} else {
+		printboth(" -- pistolspray disabled\n");
 	}
 }

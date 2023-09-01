@@ -28,6 +28,7 @@ public:
 	void Exit();
 	void BhopBoost(float value);
 	void InfAmmo();
+	void SprayShot();
 
 	void hl2Msg(const char *Message);
 
