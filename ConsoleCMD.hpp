@@ -8,12 +8,14 @@
 #ifndef CONSOLECMD_HPP_
 #define CONSOLECMD_HPP_
 #include "Player.hpp"
+#include "WinOverlay.hpp"
 
 class ConsoleCMD {
 public:
 	Player *ply;
+	WinOverlay *win;
 
-	ConsoleCMD(Player *ply);
+	ConsoleCMD(Player *ply, WinOverlay *win);
 	virtual ~ConsoleCMD();
 
 	void Clear();
@@ -29,6 +31,9 @@ public:
 	void BhopBoost(float value);
 	void InfAmmo();
 	void SprayShot();
+	void DefaultBhop();
+	void Overlay();
+	void Teleport(uint32_t id);
 
 	void hl2Msg(const char *Message);
 

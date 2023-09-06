@@ -33,7 +33,8 @@ void Player::Init() {
 				pos = { 0, 0, 0 };
 				vel = { 0, 0, 0 };
 				cam = { 0, 0 };
-				maxvel = 0;
+				camHeight = (float*)((uint32_t)ClientDLLBase + offset_cameraHeight);
+				maxVel = 0;
 
 				OnGroundFuck = (*(uint32_t*) ((uint32_t) ServerDLLBase + offset_ongroundFUCK)) + offset_ongroundFUCK_bytes;
 
@@ -41,6 +42,8 @@ void Player::Init() {
 
 				if (wep == nullptr)
 					wep = std::make_unique<Weapon>(&ServerDLLBase, &Initialized);
+
+
 
 			} catch (exception &e) {
 				cout << "plyErr: access violation, initialization failed" << endl;
@@ -136,6 +139,19 @@ void Player::SetVelocity(uint8_t dir) {
 		*(float*) (LocalPlayer + offset_velz) = vel.z;
 }
 
+void Player::SetPosition(uint8_t axis) {
+	if ((mask_X bitand axis) != 0)
+		*(float*) (LocalPlayer + offset_posx) = pos.x;
+	if ((mask_Y bitand axis) != 0)
+		*(float*) (LocalPlayer + offset_posy) = pos.y;
+	if ((mask_Z bitand axis) != 0)
+		*(float*) (LocalPlayer + offset_posz) = pos.z;
+}
+
+/*
+ * useless, mostly
+ * prevent access violation
+ */
 void Player::GetInGameState() {
 	uint8_t result = false;
 	if (EngineDLLBase != 0) {
@@ -149,8 +165,8 @@ void Player::GetInGameState() {
 
 bool Player::IsOnGroundR() {
 	if (Initialized and !IsLoading()) {
-		onground = (bool) (*(uint8_t*) ((uint32_t) ServerDLLBase + offset_ongroundR));
-		return onground;
+		onGround = (bool) (*(uint8_t*) ((uint32_t) ServerDLLBase + offset_ongroundR));
+		return onGround;
 	} else {
 		PrintPointerError();
 	}
@@ -165,6 +181,9 @@ bool Player::IsOnGroundW() {
 	return false;
 }
 
+/*
+ * more reliable way to test OnGround, preferred
+ */
 bool Player::IsOnGroundFuck() {
 	if (Initialized and !IsLoading()) {
 		uint8_t tmp = 0;
@@ -178,6 +197,9 @@ bool Player::IsOnGroundFuck() {
 	return false;
 }
 
+/*
+ * not really keys, but movement buttons (+forward, +duck, etc etc)
+ */
 bool Player::IsKeyPressed(uint16_t key) {
 	if (Initialized and !IsLoading()) {
 		jump = (((*(uint16_t*) ((uint32_t) ClientDLLBase + offset_keyswitch)) bitand key) != 0);
@@ -188,6 +210,9 @@ bool Player::IsKeyPressed(uint16_t key) {
 	return false;
 }
 
+/*
+ * is actually also just the "+jump" key thing but with a differnt value
+ */
 bool Player::IsSpaceKeyPressed() {
 	if (Initialized and !IsLoading()) {
 		uint8_t result = *(uint8_t*) ((uint32_t) ClientDLLBase + offset_spacekey);
@@ -206,26 +231,35 @@ void Player::SetOnGround(uint8_t value) {
 	}
 }
 
+/*
+ * just for research
+ */
 void Player::MaxVelUpdate() {
 	if (Initialized and !IsLoading()) {
-		if (vel.z > maxvel)
-			maxvel = vel.z;
+		if (vel.z > maxVel)
+			maxVel = vel.z;
 	} else {
 		PrintPointerError();
 	}
 }
 
+/*
+ * just for research
+ */
 void Player::MaxVelReset() {
 	if (Initialized and !IsLoading()) {
-		maxvel = 0;
+		maxVel = 0;
 	} else {
 		PrintPointerError();
 	}
 }
 
+/*
+ * just for research
+ */
 float Player::MaxVelReturn() {
 	if (Initialized and !IsLoading()) {
-		return maxvel;
+		return maxVel;
 	} else {
 		PrintPointerError();
 		return 0;
@@ -240,21 +274,12 @@ void Player::SetJumpState(uint8_t value) {
 
 void Player::PollBhop() {
 	if (Initialized and !IsLoading()) {
-		//uint8_t JumpState = *(uint8_t*) ((uint32_t) ClientDLLBase + offset_jumpstate);
-
-		//if (IsOnGroundFuck() and IsSpaceKeyPressed() and !jumpthread and (JumpState == 4)) {
-		if (IsSpaceKeyPressed() and !jumpthread) {
-			jumpthread = true;
+		if (IsSpaceKeyPressed() and !jumpThread) {
+			jumpThread = true;
 			SetJumpState(5); //jump
 			DWORD threadid = 0;
 			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (&Player::BhopThread), this, 0, &threadid);
 		}
-
-		/*
-		 else if ((JumpState == 5) and IsSpaceKeyPressed() and !jumpthread){
-		 *(uint8_t*)((uint32_t)ClientDLLBase + offset_jumpstate) = 4;
-		 }
-		 */
 
 	} else {
 		PrintPointerError();
@@ -271,6 +296,10 @@ void Player::SetResetJumpKey() {
 	*(uint16_t*) ((uint32_t) ClientDLLBase + offset_keyswitch2) = result;
 }
 
+
+/*
+ * prevent access violation
+ */
 bool Player::IsInGame() {
 	uint8_t result = 0;
 	if (EngineDLLBase != 0) {
@@ -314,14 +343,17 @@ void Player::SetAirAccelerate(float value) {
 void Player::BhopBoost() {
 	if (Initialized and !IsLoading()) {
 		GetVelocity();
-		vel.x *= bhopboost;
-		vel.y *= bhopboost;
+		vel.x *= bhopBoost;
+		vel.y *= bhopBoost;
 		SetVelocity(mask_X bitor mask_Y);
 	} else {
 		PrintPointerError();
 	}
 }
 
+/*
+ * prevent access violation
+ */
 bool Player::IsLoading() {
 	uint8_t result = 0;
 	if (ClientDLLBase != 0) {
@@ -350,10 +382,8 @@ void Player::BhopThread(void *lpParameter) {
 	while (!playerInstance->IsOnGroundFuck()) {
 		playerInstance->SetJumpState(4);
 	}
-	//playerInstance->SetJumpState(4); //stand
-	//	playerInstance->SetResetJumpKey();
-	//}
-	//playerInstance->SetOnGround(1);
 	playerInstance->SetJumpState(4); //stand
-	playerInstance->jumpthread = false;
+	playerInstance->jumpThread = false;
 }
+
+

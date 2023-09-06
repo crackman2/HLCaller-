@@ -7,6 +7,7 @@
 
 #include "ConsoleCMD.hpp"
 #include "Player.hpp"
+#include "WinOverlay.hpp"
 #include <windows.h>
 #include <iostream>
 #include <iomanip>
@@ -17,8 +18,9 @@ using namespace std;
 
 typedef void (*fMsg)(const char*, ...);
 
-ConsoleCMD::ConsoleCMD(Player *ply) {
+ConsoleCMD::ConsoleCMD(Player *ply, WinOverlay *win) {
 	this->ply = ply;
+	this->win = win;
 }
 
 ConsoleCMD::~ConsoleCMD() {
@@ -44,6 +46,9 @@ void ConsoleCMD::ShowHelp() {
 			"   bhopboost <value>           default is 1 (no boost)\n"
 			"   infammo                     enables infinite ammo\n"
 			"   pistolspray                 pistol fires all ammo at once (lag)\n"
+			"   bhop                        enables default bhop mode\n"
+			"   overlay                     enables overlay (ESP)\n"
+			"   tp <id>                     teleport to entity in entityList\n"
 	);
 }
 
@@ -75,12 +80,23 @@ void ConsoleCMD::ReInitPlayer() {
 
 void ConsoleCMD::PrintMaxVel() {
 	stringstream s;
-	s << "CMD: max velocity on Z axis: " << setprecision(2) << fixed << ply->maxvel << endl;
+	s << "CMD: max velocity on Z axis: " << setprecision(2) << fixed << ply->maxVel << endl;
 	printboth(s.str().c_str());
 }
 
 void ConsoleCMD::ResetMaxVel() {
-	ply->maxvel = 0;
+	ply->maxVel = 0;
+}
+
+void ConsoleCMD::DefaultBhop() {
+	ply->SetAirAccelerate(ply->defaultBhop_airaccelerate);
+	ply->bhopBoost = ply->defaultBhop_boost;
+	stringstream s;
+	s << "] sv_airaccelerate " << ply->defaultBhop_airaccelerate << endl;
+	hl2Msg(s.str().c_str());
+	cout << " -- sv_airaccelerate set to " << ply->defaultBhop_airaccelerate << endl;
+	cout << " -- default bhop enabled" << endl;
+	hl2Msg(" -- default bhop enabled\n");
 }
 
 void ConsoleCMD::printboth(const char *msg) {
@@ -130,7 +146,7 @@ void ConsoleCMD::AirAccelerate(float value) {
 }
 
 void ConsoleCMD::BhopBoost(float value) {
-	ply->bhopboost = value;
+	ply->bhopBoost = value;
 	stringstream s;
 	s << " -- bhopboost set to " << value << endl;
 	printboth(s.str().c_str());
@@ -152,4 +168,28 @@ void ConsoleCMD::SprayShot() {
 	} else {
 		printboth(" -- pistolspray disabled\n");
 	}
+}
+
+void ConsoleCMD::Overlay() {
+	if(win->enableOverlay){
+		win->enableOverlay = false;
+		printboth(" -- overlay disabled\n");
+	} else {
+		win->enableOverlay = true;
+		printboth(" -- overlay enabled\n");
+	}
+}
+
+void ConsoleCMD::Teleport(uint32_t id) {
+	win->esp->InitEntities();
+	win->esp->ply->pos.x = *win->esp->entityList[id].pos.x;
+	win->esp->ply->pos.y = *win->esp->entityList[id].pos.y;
+	win->esp->ply->pos.z = *win->esp->entityList[id].pos.z;
+	win->esp->ply->SetPosition(win->esp->ply->mask_X | win->esp->ply->mask_Y | win->esp->ply->mask_Z);
+
+	std::stringstream ss;
+
+	ss << " -- teleported to id " << std::dec << id << " name: " << win->esp->entityList[id].name() << "\n";
+
+	printboth(ss.str().c_str());
 }

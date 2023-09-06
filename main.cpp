@@ -8,7 +8,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
 	case DLL_PROCESS_ATTACH:
 		// DLL is being loaded into the process
 		// Perform initialization here
-		HANDLE hThread = CreateThread(NULL,0,fmcConsoleMainThread,NULL,0,NULL);
+		HANDLE hThread = CreateThread(0,0,fmcConsoleMainThread,0,0,0);
 		if(hThread)
 			CloseHandle(hThread);
 		break;

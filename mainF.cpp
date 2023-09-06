@@ -7,15 +7,17 @@
 #include "mainF.hpp"
 #include "Player.hpp"
 #include "Console.hpp"
+#include "WinOverlay.hpp"
 #include <windows.h>
-#include <stdio.h>
-#include <stdint.h>
 
 
 DWORD WINAPI fmcConsoleMainThread(LPVOID lpParam) {
 	Player ply;
-	ConsoleCMD CMD(&ply);
+	WinOverlay win(&ply);
+	ConsoleCMD CMD(&ply,&win);
 	Console con("HLCaller++", &ply, &CMD);
+
+
 
 	while (con.InputLoop()) {}
 

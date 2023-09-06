@@ -21,7 +21,7 @@ using namespace std;
 
 Console::Console(const char *Title, Player *ply, ConsoleCMD *CMD) {
 	AllocConsole();
-	freopen("CONIN$", "r", stdin);
+	freopen("CONIN$",  "r", stdin);
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
 
@@ -41,112 +41,124 @@ Console::~Console() {
 }
 
 bool Console::InputLoop() {
-    std::string input;
+	std::string input;
 
-    std::cout << "> ";
-    std::getline(std::cin, input);
+	std::cout << "> ";
+	std::getline(std::cin, input);
 
-    //std::cout << "cmd: " << input << std::endl;
+	//std::cout << "cmd: " << input << std::endl;
 
-    // Remove newline character from input
-    if (!input.empty() && input.back() == '\n') {
-        input.pop_back();
-    }
+	// Remove newline character from input
+	if (!input.empty() && input.back() == '\n') {
+		input.pop_back();
+	}
 
-    // Tokenize input
-    std::istringstream iss(input);
-    std::vector<std::string> tokens;
-    std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter(tokens));
+	// Tokenize input
+	std::istringstream iss(input);
+	std::vector<std::string> tokens;
+	std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(), std::back_inserter(tokens));
 
-    if (tokens.empty()) {
-        return true; // No input, continue loop
-    }
+	if (tokens.empty()) {
+		return true; // No input, continue loop
+	}
 
-    std::string command = tokens[0]; // First token is the command
+	std::string command = tokens[0]; // First token is the command
 
-    // Command lookup map using lambda functions
-    std::map<std::string, std::function<void()>> commandMap = {
-        { "exit", [this]() {
-            CMD->Exit();
-        } },
-        { "clear", [this]() {
-            CMD->Clear();
-        } },
-        { "help", [this]() {
-            CMD->ShowHelp();
-        } },
-        { "velrecord", [this]() {
-            CMD->PrintMaxVel();
-        } },
-        { "resetvelrecord", [this]() {
-            CMD->ResetMaxVel();
-        } },
-        { "plydata", [this]() {
-            CMD->PlayerData();
-        } },
-        { "plyreinit", [this]() {
-            CMD->ReInitPlayer();
-        } },
-        { "speedlimit", [this]() {
-            CMD->Speedlimit();
-        } },
-        { "update", [this]() {
-            ActivateUpdateThread();
-        } },
-        { "air", [this, &input]() {
-            // Find the position of the space character after the command name
-            size_t spacePos = input.find(" ");
-            if (spacePos != std::string::npos) {
-                // Extract the argument string after the space
-                std::string argStr = input.substr(spacePos + 1);
+	// Command lookup map using lambda functions
+	std::map<std::string, std::function<void()>> commandMap = { { "exit", [this]() {
+		CMD->Exit();
+	} }, { "clear", [this]() {
+		CMD->Clear();
+	} }, { "help", [this]() {
+		CMD->ShowHelp();
+	} }, { "velrecord", [this]() {
+		CMD->PrintMaxVel();
+	} }, { "resetvelrecord", [this]() {
+		CMD->ResetMaxVel();
+	} }, { "plydata", [this]() {
+		CMD->PlayerData();
+	} }, { "plyreinit", [this]() {
+		CMD->ReInitPlayer();
+	} }, { "speedlimit", [this]() {
+		CMD->Speedlimit();
+	} }, { "update", [this]() {
+		ActivateUpdateThread();
+	} }, { "air", [this, &input]() {
+		// Find the position of the space character after the command name
+		size_t spacePos = input.find(" ");
+		if (spacePos != std::string::npos) {
+			// Extract the argument string after the space
+			std::string argStr = input.substr(spacePos + 1);
 
-                // Convert the argument string to a float
-                float argValue = std::stof(argStr);
+			// Convert the argument string to a float
+			float argValue = std::stof(argStr);
 
-                // Call the AirAccelerate(float) function from CMD
-                CMD->AirAccelerate(argValue);
-            } else {
-                std::cout << " -- invalid argument for air" << std::endl;
-            }
-        } },
-        { "bhopboost", [this, &input]() {
-            // Find the position of the space character after the command name
-            size_t spacePos = input.find(" ");
-            if (spacePos != std::string::npos) {
-                // Extract the argument string after the space
-                std::string argStr = input.substr(spacePos + 1);
+			// Call the AirAccelerate(float) function from CMD
+			CMD->AirAccelerate(argValue);
+		} else {
+			std::cout << " -- invalid argument for air" << std::endl;
+		}
+	} }, { "bhopboost", [this, &input]() {
+		// Find the position of the space character after the command name
+		size_t spacePos = input.find(" ");
+		if (spacePos != std::string::npos) {
+			// Extract the argument string after the space
+			std::string argStr = input.substr(spacePos + 1);
 
-                // Convert the argument string to a float
-                float argValue = std::stof(argStr);
+			// Convert the argument string to a float
+			float argValue = std::stof(argStr);
 
-                // Call the AirAccelerate(float) function from CMD
-                CMD->BhopBoost(argValue);
-            } else {
-                std::cout << " -- invalid argument for bhopboost" << std::endl;
-            }
-        } },
-        { "infammo", [this]() {
-        	CMD->InfAmmo();
-        } },
-        { "pistolspray", [this]() {
-        	CMD->SprayShot();
-        } }
-        // Add more commands here
-    };
+			// Call the AirAccelerate(float) function from CMD
+			CMD->BhopBoost(argValue);
+		} else {
+			std::cout << " -- invalid argument for bhopboost" << std::endl;
+		}
+	} }, { "infammo", [this]() {
+		CMD->InfAmmo();
+	} }, { "pistolspray", [this]() {
+		CMD->SprayShot();
+	} }, { "bhop", [this]() {
+		if (!UpdateThreadEnabled)
+			ActivateUpdateThread();
+		if (!ply->disableSpeedlimit)
+			CMD->Speedlimit();
+		CMD->DefaultBhop();
+	} }, { "overlay", [this]() {
+		CMD->Overlay();
+	} }, { "tp", [this, &input]() {
+		// Find the position of the space character after the command name
+		size_t spacePos = input.find(" ");
+		if (spacePos != std::string::npos) {
+			// Extract the argument string after the space
+			std::string argStr = input.substr(spacePos + 1);
 
-    // Search for the command in the map
-    auto commandIt = commandMap.find(command);
-    if (commandIt != commandMap.end()) {
-        commandIt->second(); // Call the associated function
-    } else if (input.size() > 5 && input.substr(0, 5) == "msg \"" && input.back() == '"') {
-        CMD->Msg(input.c_str());
-    } else {
-        std::cout << " -- unknown command " << command << std::endl;
-    }
+			// Convert the argument string to a float
+			uint32_t argValue = std::stoul(argStr);
 
-    return true;
+			if((argValue < 0) or (argValue > CMD->win->esp->currentEntityCount)){
+				std::cout << " -- invalid argument for tp (out of range)" << std::endl;
+			} else {
+				CMD->Teleport(argValue);
+			}
+		} else {
+			std::cout << " -- invalid argument for tp" << std::endl;
+		}
+	} }
+	// Add more commands here
+			};
+
+	// Search for the command in the map
+	auto commandIt = commandMap.find(command);
+	if (commandIt != commandMap.end()) {
+		commandIt->second(); // Call the associated function
+	} else if (input.size() > 5 && input.substr(0, 5) == "msg \"" && input.back() == '"') {
+		CMD->Msg(input.c_str());
+	} else {
+		std::cout << " -- unknown command " << command << std::endl;
+	}
+
+	return true;
 }
-
 
 void Console::ActivateUpdateThread() {
 	if (UpdateThreadEnabled) {
@@ -164,8 +176,7 @@ void Console::ActivateUpdateThread() {
 		}
 
 		DWORD threadid = 0;
-		UpdateThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (&Console::UpdateThreadFunction), this, 0,
-				&threadid);
+		UpdateThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (&Console::UpdateThreadFunction), this, 0, &threadid);
 		UpdateThreadEnabled = true;
 		cout << " -- update thread started (bhop)" << endl;
 	}
@@ -173,7 +184,7 @@ void Console::ActivateUpdateThread() {
 
 void Console::UpdateThreadFunction(void *lpParameter) {
 	Console *consoleInstance = static_cast<Console*>(lpParameter);
-	bool ongroundc = consoleInstance->ply->onground;
+	bool ongroundc = consoleInstance->ply->onGround;
 	bool jumppressed = consoleInstance->ply->jump;
 
 	while (true) {
@@ -183,13 +194,13 @@ void Console::UpdateThreadFunction(void *lpParameter) {
 			consoleInstance->ply->MaxVelUpdate();
 			consoleInstance->ply->PollBhop();
 
-			if (ongroundc != consoleInstance->ply->onground) {
+			if (ongroundc != consoleInstance->ply->onGround) {
 				if (ongroundc) {
 					CMD->hl2Msg("OnGround 0\n");
 				} else {
 					CMD->hl2Msg("OnGround 1\n");
 				}
-				ongroundc = consoleInstance->ply->onground;
+				ongroundc = consoleInstance->ply->onGround;
 			}
 
 			if (jumppressed != consoleInstance->ply->jump) {
@@ -201,12 +212,12 @@ void Console::UpdateThreadFunction(void *lpParameter) {
 				jumppressed = consoleInstance->ply->jump;
 			}
 		} else {
-			Sleep(200);
+			Sleep(1000);
 		}
 
-		if(!consoleInstance->ply->IsLoading() and consoleInstance->ply->loading){
+		if (!consoleInstance->ply->IsLoading() and consoleInstance->ply->loading) {
 			consoleInstance->ply->Init();
-			if(consoleInstance->ply->Initialized)
+			if (consoleInstance->ply->Initialized)
 				consoleInstance->ply->loading = false;
 		}
 	}
